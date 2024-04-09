@@ -1,0 +1,21 @@
+SELECT ?station ?stationLabel ?stationID ?transportNetworkLabel ?address ?BaneTypeLabel ?connectingLineLabel ?openingDate ?geoLatitude ?geoLongitude
+WHERE {
+  ?station wdt:P31 wd:Q55488;  # Instance of train station
+           wdt:P17 wd:Q35.     # Country is Denmark
+  OPTIONAL { ?station wdt:P722 ?stationID. }            # Danish railway station code
+  OPTIONAL { ?station wdt:P16 ?transportNetwork. }      # S-train Copenhagen, aarhus letbane...
+  OPTIONAL { ?station wdt:P6375 ?address. }             # Address
+  OPTIONAL { ?station wdt:P1192 ?BaneType. }            # FX A, B, C..., regional
+  OPTIONAL { ?station wdt:P81 ?connectingLine. }        # FX frederikssundbanen, Skagensbanen
+  OPTIONAL { ?station wdt:P1619 ?openingDate. }         # Date of official opening
+  OPTIONAL { ?station p:P625 ?coord.
+             ?coord psv:P625 ?coord_node.
+             ?coord_node wikibase:geoLatitude ?geoLatitude;
+                         wikibase:geoLongitude ?geoLongitude. }  # Latitude and Longitude
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+
+  # Retrieving labels for properties
+  OPTIONAL {
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+  }
+}

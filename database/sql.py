@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select, update, delete
 from datetime import date
-from data import Station, Base
+from database.data import Station, Base
 
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -14,7 +14,31 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.close()
 
 
-Database = "sqlite:///data.db"
+Database = "sqlite:///database/data.db"
+
+
+def select_all(classparam):
+    with Session(engine) as session:
+        records = session.scalars(select(classparam))
+        result = []
+        for record in records:
+            result.append(record)
+        print(result)
+    return result
+
+def clear_station():
+    with Session(engine) as session:
+        stations = select_all(Station)
+        for station in stations:
+            session.execute(delete(Station).where(Station.name == station.name))
+        session.commit()
+def create_record(record):
+    with Session(engine) as session:
+        session.add(record)
+        session.commit()
+
+
+
 
 
 def create_test_data():
@@ -40,7 +64,6 @@ def create_test_data():
 if __name__ == "__main__":  # executed when file is executed directly
     engine = create_engine(Database, echo=False, future=True)
     Base.metadata.create_all(engine)
-    create_test_data()
 
 else:
     engine = create_engine(Database, echo=False, future=True)

@@ -1,16 +1,15 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from api.wikidata import parse_wikidata, get_results
+from database import sql
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def update_database():
+    wikidata = get_results()
+    parsed = parse_wikidata(wikidata)
+    sql.clear_station()
+    for data in parsed:
+        print(data)
+        sql.create_record(data)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+update_database()
+# sql.clear_station()
