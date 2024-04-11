@@ -1,2 +1,4 @@
 SQLAlchemy
 SPARQLWrapper
+future
+tkintermapview

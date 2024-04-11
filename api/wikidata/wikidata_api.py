@@ -44,6 +44,9 @@ def parse_wikidata(results):
         }
         if data_dict["type"] == "S-tog line F":
             data_dict["type"] = "F"
+        if data_dict["type"] == "S-tog Bx":
+            data_dict["type"] = "Bx"
+
         station_data.append(data_dict)
         data_dict = None
     stations = [Station(**data) for data in station_data]

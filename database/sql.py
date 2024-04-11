@@ -23,8 +23,8 @@ def select_all(classparam):
         result = []
         for record in records:
             result.append(record)
-        print(result)
     return result
+
 
 def clear_station():
     with Session(engine) as session:
@@ -32,13 +32,12 @@ def clear_station():
         for station in stations:
             session.execute(delete(Station).where(Station.name == station.name))
         session.commit()
+
+
 def create_record(record):
     with Session(engine) as session:
         session.add(record)
         session.commit()
-
-
-
 
 
 def create_test_data():
