@@ -43,9 +43,12 @@ def parse_wikidata(results):
             "geo_longitude": float(result["geoLongitude"]["value"]) if "geoLongitude" in result else None
         }
         if data_dict["type"] == "S-tog line F":
-            data_dict["type"] = "F"
+            data_dict["type"] = "F line"
         if data_dict["type"] == "S-tog Bx":
-            data_dict["type"] = "Bx"
+            data_dict["type"] = "Bx line"
+        if data_dict["type"] is not None:
+            if data_dict["type"].lower() in ["a", "b", "c", "e", "h", "bx", "f"]:
+                data_dict["type"] += " line"
 
         station_data.append(data_dict)
         data_dict = None

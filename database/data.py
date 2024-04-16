@@ -14,8 +14,8 @@ class Station(Base):
     address = Column(String, primary_key=False, nullable=True)
     # address = Column(String, primary_key=True, nullable=True)
     type = Column(String, primary_key=True, nullable=True)
-    connecting_line = Column(String, primary_key=False, nullable=True)
-    # connecting_line = Column(String, primary_key=True, nullable=True)
+    # connecting_line = Column(String, primary_key=False, nullable=True)
+    connecting_line = Column(String, primary_key=True, nullable=True)
     opening_date = Column(Date, primary_key=True, nullable=True)
     geo_latitude = Column(Float, primary_key=True, nullable=True)
     geo_longitude = Column(Float, primary_key=True, nullable=True)
@@ -39,5 +39,3 @@ class Station(Base):
         return {
             "station": self.station, "name": self.name, "uic_code": self.uic_code, "transport_network": self.transport_network, "address": self.address, "type": self.type, "connecting_line": self.connecting_line, "opening_date": self.opening_date, "geo_latitude": self.geo_latitude, "geo_longitude": self.geo_longitude
         }
-        # return self.station, self.name, self.uic_code, self.transport_network, self.address, self.type, self.connecting_line, self.opening_date, self.geo_latitude, self.geo_longitude
-

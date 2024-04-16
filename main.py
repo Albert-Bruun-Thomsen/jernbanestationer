@@ -1,4 +1,8 @@
 import sqlite3
+import re
+import time
+
+from sqlalchemy import Date
 
 from api.wikidata import parse_wikidata, get_results
 from database import sql
@@ -8,6 +12,7 @@ import tkintermapview
 from database import *
 from database.data import Station
 from database.sql import select_all
+
 
 class ExistingStation:
     station = str
@@ -19,7 +24,8 @@ class ExistingStation:
     geo_longitude = float
     description = str
 
-    def __init__(self, station, station_name, geo_latitude: float, geo_longitude: float, station_type: str = None, connecting_line: str = None, transport_network: str = None):
+    def __init__(self, station, station_name, geo_latitude: float, geo_longitude: float, station_type: str = None,
+                 connecting_line: str = None, transport_network: str = None):
         self.station = station
         self.station_name = station_name
         self.geo_latitude = geo_latitude
@@ -39,7 +45,7 @@ class ExistingStation:
         return f"{self.station_name}"
 
     def __repr__(self):
-        return f"{self.station}, {self.station_name}, {self.geo_latitude}, {self.geo_longitude}, {self.station_types}, {self.connecting_lines}, {self.transport_networks}, {self.description}"
+        return f"ExistingStation({self.station}, {self.station_name}, {self.geo_latitude}, {self.geo_longitude}, {self.station_types}, {self.connecting_lines}, {self.transport_networks}, {self.description})"
 
     def add_attribute(self, station_type: str = None, connecting_line: str = None, transport_network: str = None):
         if station_type is not None:
@@ -68,6 +74,28 @@ class ExistingStation:
         self.description = f"{self.station_name} {stripped_types}{stripped_lines}{stripped_networks}"
 
 
+def filter_stations(stations, search):
+    if len(search) == 0:
+        return stations
+    filtered_stations = []
+    filters = [x.lower() for x in search]
+    for filter in filters:
+        for station in stations:
+            print(f"station: {station.transport_network.lower() if station.transport_network is not None else "None"}, filter: {filter}")
+            if re.search(filter, station.name.lower()):
+                filtered_stations.append(station)
+            elif station.type is not None and re.search(filter, station.type.lower()):
+                    filtered_stations.append(station)
+
+            elif station.connecting_line is not None and re.search(filter, station.connecting_line.lower()):
+                    filtered_stations.append(station)
+
+            elif station.transport_network is not None and re.search(filter, station.transport_network.lower()):
+                    filtered_stations.append(station)
+            elif station.opening_date is not None and re.search(filter, str(station.opening_date)):
+                filtered_stations.append(station)
+    return filtered_stations
+
 
 def parse_stations(stations):
     existing_stations = []
@@ -81,7 +109,9 @@ def parse_stations(stations):
                 new_station = False
                 continue
         if new_station:
-            existing_stations.append(ExistingStation(station["station"], station["name"], station["geo_latitude"], station["geo_longitude"], station["type"], station["connecting_line"], station["transport_network"]))
+            existing_stations.append(
+                ExistingStation(station["station"], station["name"], station["geo_latitude"], station["geo_longitude"],
+                                station["type"], station["connecting_line"], station["transport_network"]))
     return existing_stations
 
 
@@ -103,13 +133,23 @@ def update_database():
             pass
 
 
-def fill_coordinates():
+def fill_coordinates(filter=None):
+    if filter is None:
+        filter = []
     global map_widget
+    # map_widget.delete_all_marker()
     stations = sql.select_all(Station)
-    existing_coords = []
+    stations = filter_stations(stations, filter)
     stations = parse_stations(stations)
+
+    existing_markers = set(map_widget.canvas_marker_list)
+    for marker in existing_markers:
+        if marker.position not in [(station.geo_latitude, station.geo_longitude) for station in stations]:
+            map_widget.delete(marker)
     for station in stations:
-        map_widget.set_marker(station.geo_latitude, station.geo_longitude, station.description)
+        if (station.geo_latitude, station.geo_longitude) not in [marker.position for marker in existing_markers]:
+            map_widget.set_marker(station.geo_latitude, station.geo_longitude, station.description)
+
 
 root = tk.Tk()
 root.geometry("900x800")
@@ -123,9 +163,16 @@ fill_coordinates()
 map_widget.set_zoom(8)
 map_widget.pack()
 
+search_label = tk.Label(root, text="Search for station, type, line or network. Separated by comma(c line,aarhus)")
+search_label.pack()
+search_entry = ttk.Entry(root)
+search_entry.pack()
+
+submit_button = tk.Button(root, text="Search", command=lambda: fill_coordinates(search_entry.get().split(",")))
+submit_button.pack()
+
 if __name__ == "__main__":
-    root.mainloop()
-    # fill_coordinates()
-    # update_database()
+    # root.mainloop()
+    update_database()
 else:
     pass
