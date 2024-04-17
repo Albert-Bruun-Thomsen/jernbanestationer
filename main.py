@@ -20,14 +20,16 @@ class ExistingStation:
     station_types = list
     connecting_lines = list
     transport_networks = list
+    opening_date = str
     geo_latitude = float
     geo_longitude = float
     description = str
 
-    def __init__(self, station, station_name, geo_latitude: float, geo_longitude: float, station_type: str = None,
+    def __init__(self, station, station_name, opening_date: str, geo_latitude: float, geo_longitude: float, station_type: str = None,
                  connecting_line: str = None, transport_network: str = None):
         self.station = station
         self.station_name = station_name
+        self.opening_date = opening_date
         self.geo_latitude = geo_latitude
         self.geo_longitude = geo_longitude
         self.station_types = []
@@ -41,11 +43,8 @@ class ExistingStation:
             self.transport_networks.append(transport_network)
         self.__update_description()
 
-    def get_name(self):
-        return f"{self.station_name}"
-
     def __repr__(self):
-        return f"ExistingStation({self.station}, {self.station_name}, {self.geo_latitude}, {self.geo_longitude}, {self.station_types}, {self.connecting_lines}, {self.transport_networks}, {self.description})"
+        return f"ExistingStation({self.station}, {self.station_name}, {str(self.opening_date)},{self.geo_latitude}, {self.geo_longitude}, {self.station_types}, {self.connecting_lines}, {self.transport_networks}, {self.description})"
 
     def add_attribute(self, station_type: str = None, connecting_line: str = None, transport_network: str = None):
         if station_type is not None:
@@ -71,7 +70,7 @@ class ExistingStation:
         if len(self.connecting_lines) > 0:
             stripped_networks = f", {str(self.transport_networks).strip("[]")}"
 
-        self.description = f"{self.station_name} {stripped_types}{stripped_lines}{stripped_networks}"
+        self.description = f"{self.station_name} {stripped_types}{stripped_lines}{stripped_networks}{str(self.opening_date) if self.opening_date is not None else "Missing date"}"
 
 
 def filter_stations(stations, search):
@@ -85,13 +84,13 @@ def filter_stations(stations, search):
             if re.search(filter, station.name.lower()):
                 filtered_stations.append(station)
             elif station.type is not None and re.search(filter, station.type.lower()):
-                    filtered_stations.append(station)
+                filtered_stations.append(station)
 
             elif station.connecting_line is not None and re.search(filter, station.connecting_line.lower()):
-                    filtered_stations.append(station)
+                filtered_stations.append(station)
 
             elif station.transport_network is not None and re.search(filter, station.transport_network.lower()):
-                    filtered_stations.append(station)
+                filtered_stations.append(station)
             elif station.opening_date is not None and re.search(filter, str(station.opening_date)):
                 filtered_stations.append(station)
     return filtered_stations
@@ -110,7 +109,7 @@ def parse_stations(stations):
                 continue
         if new_station:
             existing_stations.append(
-                ExistingStation(station["station"], station["name"], station["geo_latitude"], station["geo_longitude"],
+                ExistingStation(station["station"], station["name"], station["opening_date"],station["geo_latitude"], station["geo_longitude"],
                                 station["type"], station["connecting_line"], station["transport_network"]))
     return existing_stations
 
@@ -172,7 +171,7 @@ submit_button = tk.Button(root, text="Search", command=lambda: fill_coordinates(
 submit_button.pack()
 
 if __name__ == "__main__":
-    # root.mainloop()
-    update_database()
+    root.mainloop()
+    # update_database()
 else:
     pass
