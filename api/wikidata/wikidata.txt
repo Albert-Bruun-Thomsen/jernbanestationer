@@ -8,6 +8,8 @@ WHERE {
   OPTIONAL { ?station wdt:P1192 ?BaneType. }            # FX A, B, C..., regional
   OPTIONAL { ?station wdt:P81 ?connectingLine. }        # FX frederikssundbanen, Skagensbanen
   OPTIONAL { ?station wdt:P1619 ?openingDate. }         # Date of official opening
+  OPTIONAL { ?station wdt:P571 ?inceptionDate. }
+  BIND (COALESCE(?openingDate, ?inceptionDate) AS ?openingDate)
   OPTIONAL { ?station p:P625 ?coord.
              ?coord psv:P625 ?coord_node.
              ?coord_node wikibase:geoLatitude ?geoLatitude;
