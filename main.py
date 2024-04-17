@@ -1,20 +1,27 @@
-import sqlite3
 import re
-import time
-
-from sqlalchemy import Date
-
-from api.wikidata import parse_wikidata, get_results
-from database import sql
 import tkinter as tk
 from tkinter import ttk
 import tkintermapview
-from database import *
+from api.wikidata import parse_wikidata, get_results
+from database import sql
 from database.data import Station
-from database.sql import select_all
 
 
 class ExistingStation:
+    """
+    The ExistingStation class represents a station with various attributes.
+
+    Attributes:
+        station (str): The station identifier.
+        station_name (str): The name of the station.
+        station_types (list): The types of the station.
+        connecting_lines (list): The connecting lines of the station.
+        transport_networks (list): The transport networks of the station.
+        opening_date (str): The opening date of the station.
+        geo_latitude (float): The geographical latitude of the station.
+        geo_longitude (float): The geographical longitude of the station.
+        description (str): The description of the station.
+    """
     station = str
     station_name = str
     station_types = list
@@ -26,7 +33,20 @@ class ExistingStation:
     description = str
 
     def __init__(self, station, station_name, opening_date: str, geo_latitude: float, geo_longitude: float, station_type: str = None,
-                 connecting_line: str = None, transport_network: str = None):
+             connecting_line: str = None, transport_network: str = None):
+        """
+        The constructor for ExistingStation class.
+
+        Args:
+            station (str): The station identifier.
+            station_name (str): The name of the station.
+            opening_date (str): The opening date of the station.
+            geo_latitude (float): The geographical latitude of the station.
+            geo_longitude (float): The geographical longitude of the station.
+            station_type (str, optional): The type of the station. Defaults to None.
+            connecting_line (str, optional): The connecting line of the station. Defaults to None.
+            transport_network (str, optional): The transport network of the station. Defaults to None.
+        """
         self.station = station
         self.station_name = station_name
         self.opening_date = opening_date
@@ -44,9 +64,27 @@ class ExistingStation:
         self.__update_description()
 
     def __repr__(self):
+        """
+        This method is used to provide a string representation of the ExistingStation object.
+        It returns a formatted string that includes all the attributes of the ExistingStation object.
+
+        Returns:
+            str: A string representation of the ExistingStation object.
+        """
         return f"ExistingStation({self.station}, {self.station_name}, {str(self.opening_date)},{self.geo_latitude}, {self.geo_longitude}, {self.station_types}, {self.connecting_lines}, {self.transport_networks}, {self.description})"
 
     def add_attribute(self, station_type: str = None, connecting_line: str = None, transport_network: str = None):
+        """
+        This method is used to add attributes to the ExistingStation object.
+        It checks if the station_type, connecting_line, and transport_network are not None and not already in their respective lists.
+        If they are not, it adds them to their respective lists.
+        After adding the attributes, it calls the __update_description method to update the description of the ExistingStation object.
+
+        Args:
+            station_type (str, optional): The type of the station. Defaults to None.
+            connecting_line (str, optional): The connecting line of the station. Defaults to None.
+            transport_network (str, optional): The transport network of the station. Defaults to None.
+        """
         if station_type is not None:
             if station_type not in self.station_types:
                 self.station_types.append(station_type)
@@ -59,36 +97,56 @@ class ExistingStation:
         self.__update_description()
 
     def __update_description(self):
-        stripped_types = ""
-        stripped_lines = ""
-        stripped_networks = ""
+        """
+        This private method is used to update the description of the ExistingStation object.
+        It first checks if there are any station types, connecting lines, and transport networks.
+        If there are, it strips the brackets from their string representations and adds them to the description.
+        The description is a formatted string that includes the station name, station types, connecting lines, transport networks, and the opening date.
+        If the opening date is not available, it adds "Missing date" to the description.
+
+        Note:
+            This method is called internally whenever an attribute is added to the ExistingStation object.
+        """
+        stripped_types, stripped_lines, stripped_networks = "", "", ""
         if len(self.station_types) > 0:
-            stripped_types = f",{str(self.station_types).strip("[]")}"
+            stripped_types = f",{str(self.station_types).strip('[]')}"
 
         if len(self.connecting_lines) > 0:
-            stripped_lines = f", {str(self.connecting_lines).strip("[]")}"
+            stripped_lines = f", {str(self.connecting_lines).strip('[]')}"
         if len(self.connecting_lines) > 0:
-            stripped_networks = f", {str(self.transport_networks).strip("[]")}"
+            stripped_networks = f", {str(self.transport_networks).strip('[]')}"
 
-        self.description = f"{self.station_name} {stripped_types}{stripped_lines}{stripped_networks}{str(self.opening_date) if self.opening_date is not None else "Missing date"}"
+        self.description = f"{self.station_name} {stripped_types}{stripped_lines}{stripped_networks}{str(self.opening_date) if self.opening_date is not None else 'Missing date'}"
 
 
 def filter_stations(stations, search):
+    """
+    This function is used to filter stations based on search criteria.
+    It first checks if the search list is empty, if so, it returns all stations.
+    If the search list is not empty, it converts each search term to lowercase and iterates over them.
+    For each search term, it iterates over all stations and checks if the search term matches any attribute of the station.
+    If a match is found, the station is added to the list of filtered stations.
+
+    Args:
+        stations (list): A list of Station objects.
+        search (list): A list of search criteria.
+
+    Returns:
+        list: A list of filtered Station objects.
+    """
     if len(search) == 0:
         return stations
     filtered_stations = []
     filters = [x.lower() for x in search]
     for filter in filters:
         for station in stations:
-            print(f"station: {station.transport_network.lower() if station.transport_network is not None else "None"}, filter: {filter}")
+            print(f"station: {station.transport_network.lower() if station.transport_network is not None else 'None'}, filter: {filter}")
             if re.search(filter, station.name.lower()):
                 filtered_stations.append(station)
             elif station.type is not None and re.search(filter, station.type.lower()):
                 filtered_stations.append(station)
-
             elif station.connecting_line is not None and re.search(filter, station.connecting_line.lower()):
                 filtered_stations.append(station)
-
             elif station.transport_network is not None and re.search(filter, station.transport_network.lower()):
                 filtered_stations.append(station)
             elif station.opening_date is not None and re.search(filter, str(station.opening_date)):
@@ -97,6 +155,18 @@ def filter_stations(stations, search):
 
 
 def parse_stations(stations):
+    """
+    This function is used to combine stations with the same name.
+    It first converts each station to a dictionary and checks if a station with the same name already exists in the list of existing stations.
+    If a station with the same name exists, it adds the attributes of the current station to the existing station.
+    If a station with the same name does not exist, it creates a new ExistingStation object and adds it to the list of existing stations.
+
+    Args:
+        stations (list): A list of Station objects.
+
+    Returns:
+        list: A list of ExistingStation objects with unique station names.
+    """
     existing_stations = []
     for station in stations:
         new_station = True
@@ -114,13 +184,19 @@ def parse_stations(stations):
     return existing_stations
 
 
-def line_check(values):
-    if values["type"] is None:
-        return ""
-    return f", {values["type"]}"
+def update_database(refresh_markers: bool = False):
+    """
+    This function is used to update the database with new data from wikidata.
+    It first fetches the results from wikidata, parses the results, and then clears the existing stations in the database.
+    After that, it iterates over the parsed data and tries to create a new record for each data in the database.
+    If the refresh_markers argument is set to True, it will also refresh the markers on the map based on the search entry.
 
+    Args:
+        refresh_markers (bool, optional): A flag to determine whether to refresh the markers on the map. Defaults to False.
 
-def update_database():
+    Global:
+        search_entry: A global variable representing the search entry.
+    """
     wikidata = get_results()
     parsed = parse_wikidata(wikidata)
     sql.clear_station()
@@ -130,21 +206,39 @@ def update_database():
             sql.create_record(data)
         except Exception:
             pass
+    if refresh_markers:
+        fill_coordinates(search_entry.get().split(","))
 
 
-def fill_coordinates(filter=None):
-    if filter is None:
-        filter = []
+def fill_coordinates(search=None):
+    """
+    This function is used to load all stations from the database and display them on the map.
+    It first fetches all stations from the database, filters them based on the search criteria,
+    and then parses the stations to combine stations with the same name.
+    After that, it checks the existing markers on the map and removes any that do not correspond to a station.
+    Finally, it adds markers for all stations that do not already have a marker on the map.
+
+    Args:
+        search (list, optional): A list of search criteria. If no search criteria are provided, all stations are loaded. Defaults to None.
+
+    Global:
+        map_widget: A global variable representing the map widget.
+    """
+    if search is None:
+        search = []
     global map_widget
     # map_widget.delete_all_marker()
     stations = sql.select_all(Station)
-    stations = filter_stations(stations, filter)
+    stations = filter_stations(stations, search)
     stations = parse_stations(stations)
 
+    # Check existing markers on the map
     existing_markers = set(map_widget.canvas_marker_list)
     for marker in existing_markers:
+        # If the marker's position does not correspond to a station, remove the marker
         if marker.position not in [(station.geo_latitude, station.geo_longitude) for station in stations]:
             map_widget.delete(marker)
+    # Add a marker for each station that does not already have a marker
     for station in stations:
         if (station.geo_latitude, station.geo_longitude) not in [marker.position for marker in existing_markers]:
             map_widget.set_marker(station.geo_latitude, station.geo_longitude, station.description)
@@ -170,8 +264,10 @@ search_entry.pack()
 submit_button = tk.Button(root, text="Search", command=lambda: fill_coordinates(search_entry.get().split(",")))
 submit_button.pack()
 
+update_button = tk.Button(root, text="Update database (may take a while.)", command=lambda: update_database(refresh_markers=True))
+update_button.pack()
+
 if __name__ == "__main__":
     root.mainloop()
-    # update_database()
 else:
     pass
