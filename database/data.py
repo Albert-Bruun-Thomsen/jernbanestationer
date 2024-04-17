@@ -17,8 +17,8 @@ class Station(Base):
     # connecting_line = Column(String, primary_key=False, nullable=True)
     connecting_line = Column(String, primary_key=True, nullable=True)
     opening_date = Column(Date, primary_key=True, nullable=True)
-    geo_latitude = Column(Float, primary_key=True, nullable=True)
-    geo_longitude = Column(Float, primary_key=True, nullable=True)
+    geo_latitude = Column(Float, primary_key=True, nullable=False)
+    geo_longitude = Column(Float, primary_key=True, nullable=False)
 
 
     def __repr__(self):
