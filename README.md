@@ -1,7 +1,5 @@
 # Jernbanestationer
 
-## Description
-
 This project is a Python application that fetches data from Wikidata about train and metro stations in Denmark. It uses the SPARQLWrapper library to query Wikidata and SQLAlchemy for database operations. The application also provides a GUI using tkinter and tkintermapview for displaying the station data on a map.
 
 ## Installation
