@@ -241,7 +241,10 @@ def fill_coordinates(search=None):
     # Add a marker for each station that does not already have a marker
     for station in stations:
         if (station.geo_latitude, station.geo_longitude) not in [marker.position for marker in existing_markers]:
-            map_widget.set_marker(station.geo_latitude, station.geo_longitude, station.description)
+            try:
+                map_widget.set_marker(station.geo_latitude, station.geo_longitude, station.description)
+            except TypeError:
+                pass
 
 
 root = tk.Tk()
