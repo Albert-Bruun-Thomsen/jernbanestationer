@@ -4,10 +4,7 @@ from database.data import Station
 from datetime import datetime
 
 
-endpoint_url = "https://query.wikidata.org/sparql"
 
-with open("api/wikidata/wikidata.txt") as file:
-    query = file.read()
 
 
 def parse_date(date: str):
@@ -27,7 +24,6 @@ def get_results():
 def parse_wikidata(results):
     station_data = []
     for result in results["results"]["bindings"]:
-        # print(result)
         data_dict = {
 
             "station": result["station"]["value"],
@@ -56,11 +52,14 @@ def parse_wikidata(results):
     return stations
 
 
-results = get_results()
-
+endpoint_url = "https://query.wikidata.org/sparql"
 
 if __name__ == "__main__":
+    with open("wikidata.txt") as file:
+        query = file.read()
+    results = get_results()
     parsed_results = parse_wikidata(results)
     print(parsed_results)
 else:
-    pass
+    with open("api/wikidata/wikidata.txt") as file:
+        query = file.read()
