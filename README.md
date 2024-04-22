@@ -21,4 +21,4 @@ Run the `main.py` script to start the application.
 
 If there are no markers present on first initial run, press the "Update database" button.
 
-You can search for stations by name, type, line and network. The search terms should be separated by commas. For example, to search for all s-trains and all regional trains you can enter "S-train,Regional rail" in the type field.
+You can search for stations by name, type, line, network and opening date. The search terms should be separated by commas. For example, to search for all s-trains and all regional trains you can enter "S-train,Regional rail" in the type field.
